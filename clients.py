@@ -18,13 +18,6 @@ def get_username():
 # Display Welcome Message
 print("Welcome to Group F Chat Application")
 
-# Boolean variable to track if the username has been entered
-# username_entered = False
-
-# Get the username from the client if not aleady entered
-# if not username_entered:
-#     get_username()
-#     username_entered = True
 # Function to receive messages from server
 def receive_messages():
     while True:
