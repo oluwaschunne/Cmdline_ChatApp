@@ -11,7 +11,7 @@ def handle_client(client_socket, client_address):
     print(f"Connection from {client_address}")
 
     # Prompt Client for their username
-    client_socket.send("Enter your username:".encode("utf-8"))
+    client_socket.send("Enter your username: ".encode("utf-8"))
     username = client_socket.recv(1024).decode("utf-8")
 
     # Store the client's username
@@ -22,10 +22,10 @@ def handle_client(client_socket, client_address):
         message = client_socket.recv(1024).decode("utf-8")
         if not message:
             break
-        print(f"Received from {username}:{message}")
+        print(f"Received from {username}: {message}")
 
         # Broadcast message to all clients except the sender
-        broadcast(f"{username}:{message}", client_socket)
+        broadcast(f"{username}: {message}", client_socket)
 
     # Remove client from dictionary when  they disconnect
     del client_username[client_socket]

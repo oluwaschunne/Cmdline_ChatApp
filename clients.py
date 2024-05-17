@@ -41,6 +41,7 @@ def receive_messages():
 def send_message():
     while True:
         message = input(" ") # Prompt the user to input a message
+        print(f"You: {message}")
         client_socket.send(message.encode("utf-8")) # send the message to the server
 
 
