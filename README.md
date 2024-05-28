@@ -60,6 +60,12 @@ Contributions are welcome! If you'd like to contribute to the project, please fo
 4. Commit your changes and push them to your fork.
 5. Submit a pull request with a detailed description of your changes.
 
+# Authors
+- Falope Oluwaseun <falopeoluwaseun2@gmail.com> 
+- Buyeke Obare <buyekeobare@gmail.com>
+- Gift Nduagah <giftnduagah@gmail.com>
+- Owusu Vincent <vowusu032@st.ug.edu.gh>
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
