@@ -1,4 +1,3 @@
-from asyncio import exceptions
 import socket
 import threading
 import signal
@@ -10,33 +9,30 @@ client_username = {}
 # Function to handle incoming client connections
 def handle_client(client_socket, client_address):
     print(f"Connection from {client_address}")
-    
-    try:
-        # Prompt Client for their username
-        client_socket.send("Enter your username: ".encode("utf-8"))
-        username = client_socket.recv(1024).decode("utf-8")
 
-        # Store the client's username
-        client_username[client_socket] = username
+    # Prompt Client for their username
+    client_socket.send("Enter your username: ".encode("utf-8"))
+    username = client_socket.recv(1024).decode("utf-8")
 
-        while True:
-            # Receive message from client
-            message = client_socket.recv(1024).decode("utf-8")
-            if not message:
-                break
+    # Store the client's username
+    client_username[client_socket] = username
+
+    while True:
+        # Receive message from client
+        message = client_socket.recv(1024).decode("utf-8")
+        if not message:
+            break
         print(f"Received from {username}: {message}")
 
         # Broadcast message to all clients except the sender
         broadcast(f"{username}: {message}", client_socket)
-    except Exception as e:
-        print(f"An error occurred with {client_address}: {e}")
-    finally:
-        # Remove client from dictionary when  they disconnect
-        if client_socket in client_username:
-            del client_username[client_socket]
-        # Close client connection
-        client_socket.close()
-        print(f"Connection from {client_address} closed")
+
+    # Remove client from dictionary when  they disconnect
+    del client_username[client_socket]
+
+    # Close client connection
+    client_socket.close()
+    print(f"Connection from {client_address} closed")
 
 # Function to broadcast message to all connected clients except the sender
 def broadcast(message, sender_socket):
@@ -66,28 +62,29 @@ HOST = '127.0.0.1'  # Localhost
 PORT = 8080
 
 # Create socket object
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-    server_socket.bind((HOST, PORT))
-    server_socket.listen(5)
-    print(f"Server listening on {HOST}:{PORT}")
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((HOST, PORT))
+server_socket.listen(5)
 
-    clients = []
-    clients_lock = threading.Lock()  # Lock for synchronizing access to clients list
+print(f"Server listening on {HOST}:{PORT}")
 
-    # Register signal handler for graceful shutdown
-    signal.signal(signal.SIGINT, shutdown_server)
+clients = []
+clients_lock = threading.Lock()  # Lock for synchronizing access to clients list
 
-    # Accept incoming connections and start a new thread for each client
-    while True:
-        try:
-            client_socket, client_address = server_socket.accept()
-            with clients_lock:
-                clients.append(client_socket)
-            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-            client_thread.start()
-        except KeyboardInterrupt:
-            print("Server shutting down...")
-            break
-        except Exception as e:
-            print(f"An error occurred while accepting connections: {e}")
+# Register signal handler for graceful shutdown
+signal.signal(signal.SIGINT, shutdown_server)
+
+# Accept incoming connections and start a new thread for each client
+while True:
+    try:
+        client_socket, client_address = server_socket.accept()
+        with clients_lock:
+            clients.append(client_socket)
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread.start()
+    except KeyboardInterrupt:
+        print("Server shutting down...")
+        break
+    except Exception as e:
+        print(f"An error occurred while accepting connections: {e}")
         break
