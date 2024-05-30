@@ -27,10 +27,8 @@ def handle_client(client_socket, client_address):
         # Broadcast message to all clients except the sender
         broadcast(f"{username}: {message}", client_socket)
 
-    # Remove client from dictionary when  they disconnect
+    # Remove client from dictionary when they disconnect
     del client_username[client_socket]
-
-    # Close client connection
     client_socket.close()
     print(f"Connection from {client_address} closed")
 
@@ -47,14 +45,12 @@ def broadcast(message, sender_socket):
                 except Exception as e:
                     print(f"An error occurred while sending message: {e}")
 
-# Function to gracefully shutdown the server
-def shutdown_server(signal, frame):
-    print("Server shutting down...")
-    # Close all client connections
-    for client_socket in clients:
-        client_socket.close()
-    # Close the server socket
-    server_socket.close()
+# Function to gracefully shutdown the client
+def shutdown_client(signal, frame):
+    print("Client shutting down...")
+    client_socket.close()
+    receive_thread.join()
+    send_thread.join()
     sys.exit(0)
 
 # Server configuration
