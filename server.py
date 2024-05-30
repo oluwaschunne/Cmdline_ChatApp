@@ -3,7 +3,7 @@ import threading
 import signal
 import sys
 
-# Dictionary created to store client username
+# Dictionary to store client usernames
 client_username = {}
 
 # Function to handle incoming client connections
@@ -18,14 +18,17 @@ def handle_client(client_socket, client_address):
     client_username[client_socket] = username
 
     while True:
-        # Receive message from client
-        message = client_socket.recv(1024).decode("utf-8")
-        if not message:
-            break
-        print(f"Received from {username}: {message}")
+        try:
+            # Receive message from client
+            message = client_socket.recv(1024).decode("utf-8")
+            if not message:
+                break
+            print(f"Received from {username}: {message}")
 
-        # Broadcast message to all clients except the sender
-        broadcast(f"{username}: {message}", client_socket)
+            # Broadcast message to all clients except the sender
+            broadcast(f"{username}: {message}", client_socket)
+        except ConnectionResetError:
+            break
 
     # Remove client from dictionary when they disconnect
     del client_username[client_socket]
@@ -45,12 +48,18 @@ def broadcast(message, sender_socket):
                 except Exception as e:
                     print(f"An error occurred while sending message: {e}")
 
-# Function to gracefully shutdown the client
-def shutdown_client(signal, frame):
-    print("Client shutting down...")
-    client_socket.close()
-    receive_thread.join()
-    send_thread.join()
+# Function to gracefully shutdown the server
+def shutdown_server(signal, frame):
+    print("Server shutting down...")
+    # Notify all clients about the shutdown
+    with clients_lock:
+        for client_socket in clients:
+            try:
+                client_socket.send("Server is shutting down...".encode("utf-8"))
+                client_socket.close()
+            except Exception as e:
+                print(f"An error occurred while closing client socket: {e}")
+    server_socket.close()
     sys.exit(0)
 
 # Server configuration
@@ -78,9 +87,6 @@ while True:
             clients.append(client_socket)
         client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
         client_thread.start()
-    except KeyboardInterrupt:
-        print("Server shutting down...")
-        break
     except Exception as e:
         print(f"An error occurred while accepting connections: {e}")
         break
